@@ -1216,4 +1216,104 @@ SEED_DESTINATIONS = [
         "latitude": 3.8680,
         "longitude": 11.5210,
     },
+
+    # -------------------------------------------------------------------------
+    # Added from real, user-supplied photos of specific Yaoundé venues, each
+    # with its own real location and character rather than being forced under
+    # an existing, differently-located entry above (see the media README for
+    # how a destination id maps to its photos in src/assets/media/<id>/).
+    # -------------------------------------------------------------------------
+    {
+        "id": "dest_cafe_02",
+        "name": "La Maison du Café — Montée Anne-Rouge",
+        "category": "cafe",
+        "neighbourhood": "Montée Anne-Rouge",
+        "description": (
+            "A cosy, art-filled café on Montée Anne-Rouge with two indoor rooms, wall murals of "
+            "Cameroonian coffee farming, and reliable wifi for working."
+        ),
+        "history": (
+            "Montée Anne-Rouge is one of the roads climbing out of the city centre, and this café "
+            "has made itself a fixture on it — brick columns, warm lighting and walls painted with "
+            "scenes of coffee being grown, picked and processed, a small tribute to the crop this "
+            "whole place is built around.\n\n"
+            "It keeps two separate rooms ('2 salles dispo'), which in practice means it can host a "
+            "quiet solo worker and a noisier group of friends at the same time without either "
+            "bothering the other — part of why it has become a popular spot to sit for a few hours "
+            "with a laptop as much as for a coffee with friends."
+        ),
+        "getting_there": "Montée Anne-Rouge; a short taxi ride from the centre — ask for it by name.",
+        "what_to_expect": (
+            "Two indoor rooms, wifi advertised specifically for working, wooden furniture and local "
+            "artwork on the walls. Good for a working session or a relaxed catch-up."
+        ),
+        "tips": "Arrive before midday if you want a table to yourself for laptop work; it fills up over lunch.",
+        "rating": 4.6,
+        "price_level": "mid",
+        "price_range": "Coffee ≈ 1 500 – 3 000 FCFA · light lunch 4 000 – 8 000 FCFA",
+        "latitude": 3.8802,
+        "longitude": 11.5063,
+    },
+    {
+        "id": "dest_nature_03",
+        "name": "Eco Park — lac & restaurant sur pilotis",
+        "category": "nature",
+        "neighbourhood": "Yaoundé",
+        "description": (
+            "A lakeside park with a small zoo and a restaurant built on stilts over the water, "
+            "reachable by a short pirogue ride."
+        ),
+        "history": (
+            "Eco Park sits on one of Yaoundé's smaller lakes, laid out with walking paths, a modest "
+            "zoo (tortoises, a resident chimpanzee, assorted reptiles) and a restaurant built out over "
+            "the water on wooden stilts, connected to the shore by a jetty. A pirogue (dugout canoe) "
+            "ride across the lake is part of the visit as much as the meal is.\n\n"
+            "It's a private, family-oriented leisure spot rather than a historic site — the appeal is "
+            "spending a few unhurried hours by water without leaving the city, something Yaoundé's "
+            "landlocked geography otherwise makes hard to come by."
+        ),
+        "getting_there": "By taxi; ask for 'Eco Park' specifically, as several similarly-named lakeside spots exist.",
+        "what_to_expect": (
+            "A small zoo, lakeside walking paths, a stilted restaurant over the water, and pirogue "
+            "rides across the lake. Best visited in the afternoon."
+        ),
+        "tips": "Book the stilted restaurant tables ahead on weekends — they're the main draw and fill up fast.",
+        "rating": 4.4,
+        "price_level": "mid",
+        "price_range": "Entry + pirogue ≈ 1 000 – 2 000 FCFA · meal 5 000 – 12 000 FCFA",
+        "latitude": 3.8459,
+        "longitude": 11.5021,
+    },
+    {
+        "id": "dest_traditions_02",
+        "name": "Artisanat & mobilier sculpté — ateliers de Yaoundé",
+        "category": "traditions",
+        "neighbourhood": "Yaoundé",
+        "description": (
+            "Workshops and showrooms of carved wooden furniture and traditional objects — stools, "
+            "benches, ceremonial chairs and decorative panels, several with leopard-skin and beaded "
+            "detailing."
+        ),
+        "history": (
+            "Cameroonian carved-wood tradition runs deepest in the Grassfields (Bamileke and Bamoun "
+            "workshops), but pieces from those traditions — ceremonial stools, royal-style chairs, "
+            "beaded and carved panels — are sold and displayed throughout Yaoundé, including in shops "
+            "and homes that double as informal galleries.\n\n"
+            "A carved chair here is rarely 'just' furniture: the patterns are often specific to a "
+            "chieftaincy or region, and motifs (masks, ancestor figures, animals) usually carry "
+            "meaning rather than being purely decorative. Asking a seller what a specific carving "
+            "represents is welcomed, not an imposition — most are proud to explain it."
+        ),
+        "getting_there": "Workshops and showrooms are scattered across the city; ask your host or hotel for the nearest one.",
+        "what_to_expect": (
+            "Carved wooden furniture, ceremonial stools and chairs, decorative panels, and smaller "
+            "craft objects. Prices vary hugely by size and craftsmanship."
+        ),
+        "tips": "Bargaining is normal and expected. Ask what a specific carved motif represents — it's usually a good story.",
+        "rating": 4.5,
+        "price_level": "mid",
+        "price_range": "Small carvings from 3 000 FCFA · large furniture pieces 30 000 FCFA+",
+        "latitude": 3.8721,
+        "longitude": 11.5189,
+    },
 ]
