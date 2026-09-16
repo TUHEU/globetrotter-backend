@@ -139,7 +139,18 @@ services:
       RECOMMENDATION_SERVICE_URL: http://recommendation-service:8003
       CHAT_SERVICE_URL: http://chat-service:8004
     ports:
-      - "8000:8000"
+      # BUG-AVOIDANCE, NOT JUST A CONVENIENCE - this VPS hosts many other
+      # students' projects (and past attempts at this same one) as
+      # separate Docker Compose stacks, each choosing its own published
+      # ports independently. Port 8000 on this host is already legitimately
+      # owned by a DIFFERENT, unrelated project's gateway - hard-coding
+      # "8000:8000" here would either fail to start (port already bound)
+      # or, worse, silently bind to a different interface and work by
+      # accident until the other project's container restarts and reclaims
+      # it. GATEWAY_PORT defaults to 8000 for anyone running this repo on
+      # its own, uncontested machine, but is meant to be overridden in
+      # .env on a shared host - see .env.example.
+      - "${GATEWAY_PORT:-8000}:8000"
     networks:
       - globetrotter
     depends_on:
