@@ -27,6 +27,8 @@
 # of them is an ordinary editable record like any a traveller adds.
 # =============================================================================
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel, Field
 
@@ -101,14 +103,72 @@ def _find(db: dict, destination_id: str) -> dict | None:
     return next((d for d in db["destinations"] if d["id"] == destination_id), None)
 
 
-# NOTE: /categories and /media must be declared BEFORE "/{destination_id}",
-# otherwise FastAPI would treat "categories" as a destination id.
+# NOTE: /categories, /media and /activity must be declared BEFORE
+# "/{destination_id}", otherwise FastAPI would treat "categories" (etc.) as
+# a destination id.
 @router.get("/categories")
 def get_categories():
     """The distinct category ids currently in use."""
     db = read_db()
     categories = sorted({d["category"] for d in db["destinations"] if d.get("category")})
     return categories
+
+
+# -----------------------------------------------------------------------------
+# ADMIN-ONLY: recent activity across this service, for the activity dashboard
+# (frontend: pages/AdminActivity.jsx). User Service has its own /users/stats
+# for signups - this is everything destination-related.
+#
+# WHAT COUNTS AS "ACTIVITY" HERE, AND WHY NOT MORE
+# -----------------------------------------------------------------------------
+# Only things that already carry a created_at timestamp are included:
+# traveller-submitted comments, and destination create/edit/delete requests
+# (pending, approved, or rejected). Ratings and likes are NOT included -
+# they're stored as {destination_id: {user_id: value}} with no history of
+# WHEN each one happened (see social.py), so there is nothing honest to sort
+# by. Adding that would mean inventing timestamps that were never recorded,
+# which would make this feed look more complete than the data actually is.
+# -----------------------------------------------------------------------------
+@router.get("/activity", dependencies=[Depends(require_admin)])
+def recent_activity(limit: int = Query(default=30, ge=1, le=100)):
+    db = read_db()
+
+    events = []
+    for c in db.get("destination_comments", []):
+        events.append({
+            "type": "comment",
+            "destination_id": c["destination_id"],
+            "user_id": c["user_id"],
+            "text": c["text"],
+            "created_at": c["created_at"],
+        })
+    for r in db.get("destination_requests", []):
+        events.append({
+            "type": f"place_{r['type']}_request",  # place_create_request, place_update_request, place_delete_request
+            "destination_id": r.get("destination_id"),
+            "user_id": r["requested_by"],
+            "status": r["status"],
+            "created_at": r["created_at"],
+        })
+    for d in db["destinations"]:
+        if d.get("created_at"):
+            events.append({
+                "type": "place_created",
+                "destination_id": d["id"],
+                "user_id": d.get("created_by"),
+                "name": d["name"],
+                "created_at": d["created_at"],
+            })
+
+    events.sort(key=lambda e: e["created_at"], reverse=True)
+    return {
+        "events": events[:limit],
+        "total_comments": len(db.get("destination_comments", [])),
+        "total_requests": len(db.get("destination_requests", [])),
+        "pending_requests": sum(1 for r in db.get("destination_requests", []) if r["status"] == "pending"),
+        "total_destinations": len(db["destinations"]),
+        "total_itineraries": len(db.get("itineraries", [])),
+    }
 
 
 @router.post("/media", status_code=status.HTTP_201_CREATED)
@@ -152,6 +212,10 @@ def apply_create(payload: DestinationBody, created_by: str) -> dict:
     # seed ids and out of the French translation table.
     record["id"] = f"dest_user_{new_id()}"
     record["created_by"] = created_by
+    # Used by GET /destinations/activity (admin dashboard) to show recently
+    # added places. Seed destinations (seed.py) predate this field and have
+    # no created_at - the activity feed only shows places that have one.
+    record["created_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     def _create(db):
         db["destinations"].append(record)

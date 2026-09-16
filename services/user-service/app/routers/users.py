@@ -30,8 +30,9 @@
 # when resolving a group's member list.
 # =============================================================================
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.deps import require_admin
 from app.storage import read_db
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -39,6 +40,48 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 def _public(user: dict) -> dict:
     return {"id": user["id"], "name": user["name"]}
+
+
+# -----------------------------------------------------------------------------
+# ADMIN-ONLY: the "how many people use this app" number for the activity
+# dashboard (frontend: pages/AdminActivity.jsx).
+#
+# WHY THIS ISN'T /admin/stats ON ITS OWN SERVICE
+# -----------------------------------------------------------------------------
+# User Service is the only service with a users table, so it's the only one
+# that can answer "how many users exist" - same reasoning as why /users/{id}
+# lives here rather than being duplicated into every other service.
+#
+# "created_at" IS "unknown" FOR ACCOUNTS MADE BEFORE THIS FIELD EXISTED
+# -----------------------------------------------------------------------------
+# Registration only started stamping created_at with this change (see
+# routers/auth.py's _create_user). Older accounts simply don't have it -
+# rather than inventing a fake date for them, they're counted in
+# total_users and by_role, but left out of recent_signups, which only ever
+# shows accounts that genuinely have a timestamp to sort by.
+# -----------------------------------------------------------------------------
+@router.get("/stats", dependencies=[Depends(require_admin)])
+def user_stats(recent_limit: int = Query(default=10, ge=1, le=50)):
+    db = read_db()
+    users = db["users"]
+
+    by_role: dict[str, int] = {}
+    for u in users:
+        role = u.get("role", "user")
+        by_role[role] = by_role.get(role, 0) + 1
+
+    dated = [u for u in users if u.get("created_at")]
+    dated.sort(key=lambda u: u["created_at"], reverse=True)
+
+    return {
+        "total_users": len(users),
+        "by_role": by_role,
+        "recent_signups": [
+            {"id": u["id"], "name": u["name"], "created_at": u["created_at"]}
+            for u in dated[:recent_limit]
+        ],
+        "accounts_missing_signup_date": len(users) - len(dated),
+    }
 
 
 @router.get("")

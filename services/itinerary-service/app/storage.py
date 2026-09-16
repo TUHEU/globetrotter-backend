@@ -19,6 +19,7 @@
 # see user-service/app/storage.py for the fuller explanation.
 # =============================================================================
 
+import copy
 import json
 import os
 import threading
@@ -37,7 +38,21 @@ _lock = threading.Lock()
 
 def _empty_db() -> dict:
     return {
-        "destinations": SEED_DESTINATIONS,
+        # BUG FIX - deep-copy, don't hand out the SAME list object every
+        # time. This used to be `"destinations": SEED_DESTINATIONS` - every
+        # test that created a fresh "empty" database (via isolated_database
+        # in conftest.py) got the identical in-memory list SEED_DESTINATIONS
+        # points to, not a copy of it. apply_create()'s
+        # `db["destinations"].append(record)` therefore mutated that ONE
+        # shared list permanently for the rest of the test process -
+        # a destination created by one test (often with bare-minimum
+        # fields, like no history) leaked into every test that ran after
+        # it, including ones asserting things about "all seed destinations"
+        # (see test_the_history_is_substantial). A deep copy means each
+        # fresh database genuinely starts from its own independent seed,
+        # exactly as "empty database" implies - this also protects the
+        # real, running server the same way if it's ever reset/reseeded.
+        "destinations": copy.deepcopy(SEED_DESTINATIONS),
         "itineraries": [],
         "favorites": {},
         # Pending/approved/rejected proposals from regular users to

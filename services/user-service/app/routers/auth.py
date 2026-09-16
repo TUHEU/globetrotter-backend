@@ -18,6 +18,7 @@
 # =============================================================================
 
 import os
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, field_validator
@@ -101,6 +102,10 @@ def register(payload: RegisterRequest):
         "email": payload.email,
         "password_hash": hash_password(payload.password),
         "role": role,
+        # Used by GET /users/stats (admin activity dashboard) to show recent
+        # signups. Accounts created before this field existed simply have
+        # no created_at - see that endpoint's docstring for how it handles that.
+        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
     def _create(db):
@@ -173,6 +178,7 @@ def google_sign_in(payload: GoogleSignInRequest):
             # anywhere else that reads password_hash.
             "password_hash": hash_password(new_id() + new_id()),
             "role": _resolve_role(email),
+            "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
 
         def _create(db):
